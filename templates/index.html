@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if error %}
+        <div class="alert" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <!-- Quick numbers at the top of the page -->
+    <section class="stats">
+        <div class="stat"><span>{{ roster|length }}</span>Students</div>
+        <div class="stat"><span>{{ days_marked }}</span>Days marked</div>
+    </section>
+
+    <!-- Attendance table -->
+    <section class="card">
+        <div class="card-head">
+            <h2>All students</h2>
+        </div>
+
+        {% if rows %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Roll no.</th>
+                            <th>Name</th>
+                            <th>Attended</th>
+                            <th>Total</th>
+                            <th>Attendance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                            <tr class="{{ 'defaulter' if row.defaulter }}">
+                                <td>{{ row.roll_no }}</td>
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.attended }}</td>
+                                <td>{{ row.total }}</td>
+                                <td>{{ row.percentage }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="muted">No students to show.</p>
+        {% endif %}
+    </section>
+{% endblock %}
