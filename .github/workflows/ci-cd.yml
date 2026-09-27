@@ -64,3 +64,34 @@ jobs:
       - name: Stop container
         if: always()
         run: docker rm -f attendance
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}&ref=${{ github.sha }}"
+
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    env:
+      LIVE_URL: ${{ vars.LIVE_URL }}
+    steps:
+      - name: Wait until the live site runs this commit
+        run: |
+          EXPECTED="${GITHUB_SHA:0:7}"
+          URL="${LIVE_URL%/}/health"
+          echo "Waiting for $URL to report commit $EXPECTED"
+          for i in $(seq 1 20); do
+            LIVE=$(curl -fsS --max-time 30 "$URL" | jq -r '.commit' || echo "unreachable")
+            echo "Attempt $i: live commit is $LIVE"
+            if [ "$LIVE" = "$EXPECTED" ]; then
+              echo "Live site is running $EXPECTED"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Live site never reported commit $EXPECTED"
+          exit 1
