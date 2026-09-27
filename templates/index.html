@@ -61,5 +61,26 @@
                 <button type="submit">Add student</button>
             </form>
         </section>
+
+        <!-- Mark Attendance form -->
+        <section class="card">
+            <h2>Mark attendance</h2>
+            <form method="post" action="{{ url_for('mark_attendance') }}">
+                <label for="date">Date</label>
+                <input type="date" id="date" name="date" value="{{ today }}" max="{{ today }}" required>
+
+                <fieldset>
+                    <legend>Tick the students who were present</legend>
+                    {% for roll_no, name in roster %}
+                        <label class="check">
+                            <input type="checkbox" name="present" value="{{ roll_no }}">
+                            {{ roll_no }} &ndash; {{ name }}
+                        </label>
+                    {% endfor %}
+                </fieldset>
+
+                <button type="submit">Save attendance</button>
+            </form>
+        </section>
     </div>
 {% endblock %}
