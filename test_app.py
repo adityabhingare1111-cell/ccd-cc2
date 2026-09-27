@@ -76,3 +76,17 @@ def test_same_date_twice_rejected(client):
     assert first.status_code == 302
     assert second.status_code == 400
     assert b"already marked" in second.data
+
+
+def test_defaulters_filter_shows_only_low_attendance(client):
+    page = client.get("/?filter=defaulters").data
+    # Check table cells, because every name also appears in the checkbox list.
+    assert b"<td>CE103</td>" in page      # 50% -> defaulter
+    assert b"<td>CE101</td>" not in page  # 100% -> not a defaulter
+
+
+def test_api_attendance_for_a_date(client):
+    response = client.get("/api/attendance?date=2025-07-04")
+    assert response.status_code == 200
+    assert response.get_json()["present"] == ["CE101", "CE104"]
+    assert client.get("/api/attendance?date=not-a-date").status_code == 400
