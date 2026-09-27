@@ -5,7 +5,7 @@ All data lives in memory (Python dicts), so it resets whenever the app restarts.
 """
 import os
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 app = Flask(__name__)
 
@@ -114,6 +114,21 @@ def inject_commit():
 @app.route("/")
 def index():
     return render_home()
+
+
+@app.route("/students", methods=["POST"])
+def add_student():
+    # .strip() removes spaces; .upper() makes "ce106" and "CE106" the same roll number.
+    roll_no = request.form.get("roll_no", "").strip().upper()
+    name = request.form.get("name", "").strip()
+
+    if not roll_no or not name:
+        return render_home("Roll number and name are both required.", 400)
+    if roll_no in students:
+        return render_home(f"Roll number {roll_no} already exists.", 400)
+
+    students[roll_no] = name
+    return redirect(url_for("index"))
 
 
 # ---------------------------------------------------------------------------

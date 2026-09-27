@@ -46,4 +46,20 @@
             <p class="muted">No students to show.</p>
         {% endif %}
     </section>
+
+    <div class="forms">
+        <!-- Add Student form -->
+        <section class="card">
+            <h2>Add student</h2>
+            <form method="post" action="{{ url_for('add_student') }}">
+                <label for="roll_no">Roll number</label>
+                <input id="roll_no" name="roll_no" placeholder="e.g. CE106" required>
+
+                <label for="name">Full name</label>
+                <input id="name" name="name" placeholder="e.g. Meera Iyer" required>
+
+                <button type="submit">Add student</button>
+            </form>
+        </section>
+    </div>
 {% endblock %}
