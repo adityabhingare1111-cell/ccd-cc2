@@ -12,6 +12,7 @@
             <a class="brand" href="{{ url_for('index') }}">Student Attendance</a>
             <nav>
                 <a href="{{ url_for('index') }}">All students</a>
+                <a href="{{ url_for('index', filter='defaulters') }}">Defaulters</a>
                 <a href="{{ url_for('api_students') }}">API</a>
             </nav>
         </div>

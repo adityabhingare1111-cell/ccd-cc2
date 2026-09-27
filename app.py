@@ -99,12 +99,18 @@ def parse_date(text):
 
 def render_home(error=None, status=200):
     """Render the home page. Used for normal views and for showing form errors."""
+    view = request.args.get("filter", "all")
+    rows = all_summaries()
+    if view == "defaulters":
+        rows = [row for row in rows if row["defaulter"]]
     page = render_template(
         "index.html",
-        rows=all_summaries(),
+        rows=rows,
+        view=view,
         error=error,
         roster=sorted(students.items()),
         days_marked=len(attendance),
+        defaulter_count=sum(1 for row in all_summaries() if row["defaulter"]),
         min_attendance=MIN_ATTENDANCE,
         today=date.today().isoformat(),
     )
@@ -168,6 +174,23 @@ def mark_attendance():
 def api_students():
     rows = all_summaries()
     return jsonify({"count": len(rows), "students": rows})
+
+
+@app.route("/api/attendance")
+def api_attendance():
+    day = parse_date(request.args.get("date", ""))
+    if day is None:
+        return jsonify({"error": "Pass a date as ?date=YYYY-MM-DD"}), 400
+
+    record = attendance.get(day.isoformat())
+    if record is None:
+        return jsonify({"error": f"No attendance marked for {day.isoformat()}"}), 404
+
+    return jsonify({
+        "date": day.isoformat(),
+        "present": sorted(roll for roll, was_present in record.items() if was_present),
+        "absent": sorted(roll for roll, was_present in record.items() if not was_present),
+    })
 
 
 @app.route("/health")

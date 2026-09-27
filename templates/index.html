@@ -9,12 +9,18 @@
     <section class="stats">
         <div class="stat"><span>{{ roster|length }}</span>Students</div>
         <div class="stat"><span>{{ days_marked }}</span>Days marked</div>
+        <div class="stat stat-warn"><span>{{ defaulter_count }}</span>Below {{ min_attendance|int }}%</div>
     </section>
 
     <!-- Attendance table -->
     <section class="card">
         <div class="card-head">
-            <h2>All students</h2>
+            <h2>{% if view == "defaulters" %}Defaulters (below {{ min_attendance|int }}%){% else %}All students{% endif %}</h2>
+            {% if view == "defaulters" %}
+                <a class="link" href="{{ url_for('index') }}">Show all</a>
+            {% else %}
+                <a class="link" href="{{ url_for('index', filter='defaulters') }}">Show defaulters only</a>
+            {% endif %}
         </div>
 
         {% if rows %}
