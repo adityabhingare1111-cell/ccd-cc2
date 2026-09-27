@@ -30,3 +30,37 @@ jobs:
 
       - name: Run tests
         run: pytest -v
+
+  build:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build --build-arg GIT_SHA=${{ github.sha }} -t attendance-app .
+
+      - name: Start container
+        run: docker run -d --name attendance -p 5000:5000 attendance-app
+
+      - name: Wait for the app to start
+        run: |
+          for i in $(seq 1 15); do
+            if curl -fs http://localhost:5000/health > /dev/null; then
+              echo "App is up"
+              exit 0
+            fi
+            echo "Waiting... ($i)"
+            sleep 2
+          done
+          echo "App did not start in time"
+          docker logs attendance
+          exit 1
+
+      - name: Smoke test /health
+        run: curl -f http://localhost:5000/health
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f attendance
