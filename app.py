@@ -4,6 +4,7 @@ A small Flask app built for CCA 2 of Cloud Computing and DevOps (CSE30040).
 All data lives in memory (Python dicts), so it resets whenever the app restarts.
 """
 import os
+from datetime import date
 
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
@@ -88,6 +89,14 @@ def all_summaries():
     return [student_summary(roll_no) for roll_no in sorted(students)]
 
 
+def parse_date(text):
+    """Turn 'YYYY-MM-DD' into a date object, or return None if it is invalid."""
+    try:
+        return date.fromisoformat(text)
+    except (TypeError, ValueError):
+        return None
+
+
 def render_home(error=None, status=200):
     """Render the home page. Used for normal views and for showing form errors."""
     page = render_template(
@@ -97,6 +106,7 @@ def render_home(error=None, status=200):
         roster=sorted(students.items()),
         days_marked=len(attendance),
         min_attendance=MIN_ATTENDANCE,
+        today=date.today().isoformat(),
     )
     return page, status
 
@@ -128,6 +138,25 @@ def add_student():
         return render_home(f"Roll number {roll_no} already exists.", 400)
 
     students[roll_no] = name
+    return redirect(url_for("index"))
+
+
+@app.route("/attendance", methods=["POST"])
+def mark_attendance():
+    day = parse_date(request.form.get("date", "").strip())
+
+    if day is None:
+        return render_home("Please choose a valid date.", 400)
+    if day > date.today():
+        return render_home("You cannot mark attendance for a future date.", 400)
+    if day.isoformat() in attendance:
+        return render_home(f"Attendance for {day.isoformat()} is already marked.", 400)
+    if not students:
+        return render_home("Add at least one student before marking attendance.", 400)
+
+    # Every ticked checkbox sends its roll number under the name "present".
+    present = set(request.form.getlist("present"))
+    attendance[day.isoformat()] = {roll_no: roll_no in present for roll_no in students}
     return redirect(url_for("index"))
 
 
