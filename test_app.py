@@ -1,4 +1,6 @@
 """Tests for the Student Attendance System. Run with: pytest -v"""
+from datetime import date, timedelta
+
 import pytest
 
 import app as attendance_app
@@ -48,3 +50,29 @@ def test_empty_name_rejected(client):
     response = client.post("/students", data={"roll_no": "CE201", "name": "   "})
     assert response.status_code == 400
     assert find_student(client, "CE201") is None
+
+
+def test_percentage_after_two_days(client):
+    client.post("/students", data={"roll_no": "CE300", "name": "Test Student"})
+    client.post("/attendance", data={"date": "2024-01-10", "present": ["CE300"]})  # present
+    client.post("/attendance", data={"date": "2024-01-11"})  # absent (box not ticked)
+
+    student = find_student(client, "CE300")
+    assert student["attended"] == 1
+    assert student["total"] == 2
+    assert student["percentage"] == 50.0
+
+
+def test_future_date_rejected(client):
+    tomorrow = (date.today() + timedelta(days=1)).isoformat()
+    response = client.post("/attendance", data={"date": tomorrow, "present": ["CE101"]})
+    assert response.status_code == 400
+    assert b"future" in response.data
+
+
+def test_same_date_twice_rejected(client):
+    first = client.post("/attendance", data={"date": "2024-02-01", "present": ["CE101"]})
+    second = client.post("/attendance", data={"date": "2024-02-01", "present": ["CE101"]})
+    assert first.status_code == 302
+    assert second.status_code == 400
+    assert b"already marked" in second.data
