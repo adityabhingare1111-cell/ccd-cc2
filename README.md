@@ -4,9 +4,9 @@ A small dynamic web app for tracking lecture attendance. The app builds its page
 
 Built for **CCA 2 – Cloud Computing and DevOps (CSE30040)**, MIT World Peace University, Pune.
 
-- **Live application:** `<LIVE_URL – e.g. https://your-app.onrender.com>`
-- **GitHub repository:** `<REPO_URL – e.g. https://github.com/your-username/student-attendance-system>`
-- **Pipeline runs:** `<REPO_URL>/actions`
+- **Live application:** https://ccd-cc2.onrender.com
+- **GitHub repository:** https://github.com/adityabhingare1111-cell/ccd-cc2
+- **Pipeline runs:** https://github.com/adityabhingare1111-cell/ccd-cc2/actions
 
 ## Features
 
