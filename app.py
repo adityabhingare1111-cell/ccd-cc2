@@ -72,7 +72,7 @@ def student_summary(roll_no):
     # Only count dates on which this student was on the register.
     total = sum(1 for day in attendance.values() if roll_no in day)
     attended = sum(1 for day in attendance.values() if day.get(roll_no))
-    percentage = round(attended * 100 / total, 1) if total else 0.0
+    percentage = round(attended / total, 1) if total else 0.0
     return {
         "roll_no": roll_no,
         "name": students[roll_no],
